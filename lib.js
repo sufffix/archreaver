@@ -8,6 +8,8 @@ cnv.width = 800;
 cnv.height = 600;
 
 // global variables
+var hitting = false;
+
 var player = {
     x: 375,
     y: 550,
@@ -19,7 +21,8 @@ var player = {
     currentFrame: 0,
     currentDir: 0,
     animX: 0,
-    attacking: false
+    attacking: false,
+    hp: 100
 }
 
 var sword = {
@@ -29,8 +32,9 @@ var sword = {
     h: 50,
     animX: 8,
     currentDir: 0,
-    damage: 15,
-    canAttack: true
+    damage: 20,
+    canAttack: true,
+    attacked: false
 }
 
 var enemy = {
@@ -38,7 +42,8 @@ var enemy = {
     y: 200,
     w: 50,
     h: 50,
-    hp: 100
+    hp: 100,
+    damage: 10
 }
 
 
@@ -52,20 +57,50 @@ knightSheet.onload = function() {
 }
 
 var swordImg = document.getElementById("sword");
-var carpet = document.getElementById("carpet");
 
 
-var currentRoom = spawnRoom;
+var stage = {
+    x: 0,
+    y: 0
+}
 
 
 // animation loop
-requestAnimationFrame(currentRoom);
+requestAnimationFrame(animate);
 
-function spawnRoom() {
+function animate() {
     // move player by xspeed and yspeed
     player.x += player.xSpeed;
     player.y += player.ySpeed;
 
+
+    // move enemy to player
+    if (enemy.hp > 0) {
+        if (enemy.x < player.x) {
+            enemy.x++;
+        } else if (enemy.x > player.x) {
+            enemy.x--;
+        }
+    
+        if (enemy.y < player.y) {
+            enemy.y++;
+        } else if (enemy.y > player.y) {
+            enemy.y--;
+        } 
+    } else if (enemy.hp == 0 && enemy.x < 1000000) {
+        enemy.x = 1000000;
+    }
+
+    var hitChar = hitDetect(enemy, player);
+
+    if (hitChar) {
+        characterHit();
+    }
+    
+
+    
+
+    // move sword to player position
     if (sword.currentDir == 0) {
         sword.x = player.x;
         sword.y = player.y-44;
@@ -80,17 +115,13 @@ function spawnRoom() {
         sword.y = player.y;
     } 
 
-    ctx.clearRect(0, 0, cnv.width, cnv.height);
+    if (stage.x == 0 && stage.y == 0) {
+        ctx.clearRect(0, 0, cnv.width, cnv.height);
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(300, 0, 200, 600);
-
-    var pat = ctx.createPattern(carpet, 'repeat-y');
-
-    ctx.rect(300, 0, 25, 600);
-    ctx.fillStyle = pat;
-    ctx.fill();
-
+        ctx.fillStyle = "red";
+        ctx.fillRect(300, 0, 200, 600);
+    }
+     
     // draw player
     ctx.drawImage(knightSheet, player.animX, 0, 8, 8, player.x, player.y, player.w, player.h);
 
@@ -100,12 +131,11 @@ function spawnRoom() {
     }
 
     // draw enemy
-    ctx.drawImage(enemySheet, 0, 0, 8, 8, enemy.x, enemy.y, enemy.w, enemy.h);
-
-
-
+    if (enemy.hp > 0) {
+        ctx.drawImage(enemySheet, 0, 0, 8, 8, enemy.x, enemy.y, enemy.w, enemy.h);
+    }
     // request next animation frame
-    requestAnimationFrame(currentRoom);
+    requestAnimationFrame(animate);
 }
 
 // key event listeners
@@ -141,7 +171,6 @@ function keydownHandler(event) {
             attack(1);
         } 
     }
-    
 }
 
 function keyupHandler(event) {
@@ -170,7 +199,6 @@ function walkFrame() {
         player.currentFrame--;
     }
     player.animX = player.currentDir * 24 + player.currentFrame * 8;
-
 }
 
 function attack(dir) {
@@ -185,19 +213,38 @@ function attack(dir) {
         if (hit) {
             if (enemy.hp < sword.damage) {
                 enemy.hp = 0;
+                sword.attacked = true;
             } else {
                 enemy.hp -= sword.damage;
+                sword.attacked = true;
             }
-            console.log(enemy.hp);
+            console.log("enemy hp is now " + enemy.hp);
         }
         
         setTimeout(function () {
+            sword.canAttack = false;
+
+            if (!sword.attacked) {
+                var hit = hitDetect(enemy, sword);
+                if (hit) {
+                    if (enemy.hp < sword.damage) {
+                        enemy.hp = 0;
+                        sword.attacked = true;
+                    } else {
+                        enemy.hp -= sword.damage;
+                        sword.attacked = true;
+                    }
+                    console.log("enemy hp is now " + enemy.hp);
+                }
+            }
+            
             player.attacking = false;
+            sword.attacked = false;
         }, 100)
 
         setTimeout(function () {
             sword.canAttack = true
-        }, 600)
+        }, 400)
     }
 }
 
@@ -208,13 +255,26 @@ function swordAnim() {
 
 function hitDetect(e1, e2) {
     if (e1.x < e2.x + e2.w &&
-        e1.x + e1.w > e2.x &&
-        e1.y < e2.y + e2.h &&
-        e1.h + e1.y > e2.y) {
-            return true;
-        } else {
-            return false;
-        }
-
+    e1.x + e1.w > e2.x &&
+    e1.y < e2.y + e2.h &&
+    e1.h + e1.y > e2.y) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
+function characterHit() {
+    if (!hitting) {
+        hitting = true;
+        setTimeout(function() {
+            if (player.hp > enemy.damage) {
+                player.hp -= enemy.damage;
+            } else {
+                player.hp = 0;
+            }
+            console.log("player hp is now " + player.hp);
+            hitting = false;
+        }, 400)
+    }
+}
