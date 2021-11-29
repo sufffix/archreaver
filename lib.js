@@ -9,6 +9,7 @@ cnv.height = 600;
 
 // global variables
 var hitting = false;
+var healthBar = document.getElementById("health");
 
 var player = {
     x: 375,
@@ -162,13 +163,13 @@ function keydownHandler(event) {
             player.currentDir = 1;
             walkFrame();
         } else if (event.key == "ArrowUp") {
-            attack(0);
+            attack(0, wea);
         } else if (event.key == "ArrowLeft") {
-            attack(3);
+            attack(3, wea);
         } else if (event.key == "ArrowDown") {
-            attack(2);
+            attack(2, wea);
         } else if (event.key == "ArrowRight") {
-            attack(1);
+            attack(1, wea);
         } 
     }
 }
@@ -201,7 +202,7 @@ function walkFrame() {
     player.animX = player.currentDir * 24 + player.currentFrame * 8;
 }
 
-function attack(dir) {
+function attack(dir, weapon) {
     if (sword.canAttack) {
         sword.currentDir = dir;
 
@@ -218,6 +219,7 @@ function attack(dir) {
                 enemy.hp -= sword.damage;
                 sword.attacked = true;
             }
+            
             console.log("enemy hp is now " + enemy.hp);
         }
         
@@ -274,7 +276,12 @@ function characterHit() {
                 player.hp = 0;
             }
             console.log("player hp is now " + player.hp);
+            updateHP();
             hitting = false;
         }, 400)
     }
+}
+
+function updateHP() {
+    healthBar.value = +player.hp;
 }

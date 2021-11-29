@@ -19,3 +19,39 @@ canvas {
     border: 1px solid white;
 }
 
+#health {
+    background-color: #ccc;
+    margin: 10px;
+}
+
+#health::-moz-progress-bar {
+    background: red;
+}
+
+#health::-webkit-progress-value {
+    background: red;
+}
+
+#health::--webkit-prograss-bar {
+    background: red;
+}
+
+#inventory {
+    align-items: center;
+    margin: auto;
+    width: 120px;
+    height: 50px;
+    padding: 10px;
+    border: lightgrey;
+}
+
+.slot {
+    float: left;
+    width: 44%;
+    margin-right: 5%;
+    margin-bottom: 0.5em;
+}
+
+#slot1 {
+    border: 1px solid lightgrey;
+}
