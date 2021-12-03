@@ -42,7 +42,6 @@ canvas {
     width: 120px;
     height: 50px;
     padding: 10px;
-    border: lightgrey;
 }
 
 .slot {
@@ -50,8 +49,9 @@ canvas {
     width: 44%;
     margin-right: 5%;
     margin-bottom: 0.5em;
+    
 }
 
-#slot1 {
+.active {
     border: 1px solid lightgrey;
 }
